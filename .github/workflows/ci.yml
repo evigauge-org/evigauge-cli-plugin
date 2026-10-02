@@ -1,0 +1,83 @@
+name: CI
+
+# Every push and PR. This repo is public, so the secret scan runs first and
+# fails the build on any hit.
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Secret + internal-detail scan
+        run: |
+          set -uo pipefail
+          fail=0
+          scan() {  # $1 = label, $2 = ERE pattern
+            if grep -rIEn "$2" . --exclude-dir=.git --exclude-dir=.github >/tmp/hit 2>/dev/null; then
+              echo "::error::BLOCKED — $1 found:"; cat /tmp/hit; fail=1
+            fi
+          }
+          scan "workspace/API key"     'opx_(live|test)_[A-Za-z0-9]{8,}'
+          scan "AWS access key"        'AKIA[0-9A-Z]{16}'
+          scan "GitHub token"          '(ghp_|gho_)[A-Za-z0-9]{20,}|github_pat_[A-Za-z0-9_]{20,}'
+          scan "private key block"     'BEGIN ([A-Z]+ )?PRIVATE KEY'
+          scan "generic sk- secret"    'sk-[A-Za-z0-9]{20,}'
+          scan "internal infra marker" '(amazonaws\.com|opexia-prod|zealous-spider|subnet-[0-9a-f]{8,}|sg-[0-9a-f]{8,})'
+          exit $fail
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Manifests are valid JSON
+        run: |
+          for f in .claude-plugin/plugin.json .claude-plugin/marketplace.json .mcp.json hooks/hooks.json; do
+            python -c "import json,sys; json.load(open(sys.argv[1]))" "$f" && echo "ok $f"
+          done
+
+      - name: Hook scripts and Python templates parse
+        run: |
+          for f in hooks/*.sh; do bash -n "$f" && echo "ok $f"; done
+          find skills -name '*.py' -print0 | xargs -0 python -m py_compile && echo "templates ok"
+
+      # vendor/ must be an exact copy of pxcore + pxcore_mcp from the SDK
+      # release named in vendor/SDK_VERSION (evigauge-org/evigauge-python-sdk,
+      # PyPI opexia-trace). To update: bump SDK_VERSION and copy both packages
+      # from that release.
+      - name: Bundled pxcore matches the pinned SDK release
+        run: |
+          v=$(cat vendor/SDK_VERSION)
+          pip download --no-deps --pre "opexia-trace==$v" -d /tmp/sdk
+          mkdir -p /tmp/sdk/x && cd /tmp/sdk/x && python -m zipfile -e ../opexia_trace-*.whl . && cd -
+          diff -r --exclude=__pycache__ vendor/pxcore /tmp/sdk/x/pxcore
+          diff -r --exclude=__pycache__ vendor/pxcore_mcp /tmp/sdk/x/pxcore_mcp
+          echo "vendor matches opexia-trace $v"
+
+      # Start the MCP server exactly as .mcp.json does and list its tools.
+      - name: MCP server starts and lists its tools
+        env:
+          PYTHONPATH: vendor
+          PXCORE_MODEL: claude-fable-5
+        run: |
+          printf '%s\n' \
+            '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-06-18","capabilities":{},"clientInfo":{"name":"ci","version":"0"}}}' \
+            '{"jsonrpc":"2.0","method":"notifications/initialized"}' \
+            '{"jsonrpc":"2.0","id":2,"method":"tools/list"}' \
+          | python -m pxcore_mcp > /tmp/mcp.out
+          python - <<'PY'
+          import json
+          r = [json.loads(l) for l in open("/tmp/mcp.out") if l.strip()]
+          tools = sorted(t["name"] for x in r if x.get("id") == 2 for t in x["result"]["tools"])
+          want = ["pxcore_grep", "pxcore_read", "pxcore_run", "pxcore_view"]
+          assert tools == want, tools
+          print("MCP tools:", tools)
+          PY

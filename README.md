@@ -133,16 +133,13 @@ plugin's MCP bundle.
 
 ## Install
 
-**Local (from this monorepo):**
 ```
-/plugin marketplace add ./tools/opexia-cli-plugin
+/plugin marketplace add evigauge-org/evigauge-cli-plugin
 /plugin install opexia@opexia
 ```
 
-**Remote (point at the repo subdirectory):** add a marketplace entry with a
-`git-subdir` source whose `path` is `tools/opexia-cli-plugin`, then
-`/plugin install opexia@<your-marketplace>`. Validate any layout with
-`claude plugin validate ./tools/opexia-cli-plugin`.
+**Local checkout:** `/plugin marketplace add ./evigauge-cli-plugin`, then the same
+`/plugin install`. Validate any layout with `claude plugin validate .`.
 
 ## Use
 

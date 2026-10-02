@@ -50,12 +50,12 @@ Two commands, run inside Claude Code. The first registers the plugin's
 marketplace from GitHub; the second installs it.
 
 ```
-/plugin marketplace add star-56/opexia-cli-plugin
+/plugin marketplace add evigauge-org/evigauge-cli-plugin
 /plugin install opexia@opexia
 ```
 
-That's the whole install. (`star-56/opexia-cli-plugin` is the GitHub repo —
-`https://github.com/star-56/opexia-cli-plugin`. Claude Code fetches the plugin
+That's the whole install. (`evigauge-org/evigauge-cli-plugin` is the GitHub repo —
+`https://github.com/evigauge-org/evigauge-cli-plugin`. Claude Code fetches the plugin
 from there directly; you don't need to clone anything.)
 
 ### Confirm it installed
@@ -201,7 +201,7 @@ opexia live --local         # force zero-egress even if a key is set
 
 ```
 # Install
-/plugin marketplace add star-56/opexia-cli-plugin
+/plugin marketplace add evigauge-org/evigauge-cli-plugin
 /plugin install opexia@opexia
 /plugin                         # confirm it's installed
 
