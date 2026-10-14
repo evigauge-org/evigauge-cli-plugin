@@ -13,8 +13,11 @@ identical across all three.
   a stock OTel exporter with the three OTEL env vars and ZERO `opexia.*`
   attributes still ingests — you get spans, latency, errors, and fleet topology.
   Add the `opexia.*` attributes (RULE 1) to light up the intelligence engines.
-- `opexia.project_id` resolves as: header `x-opexia-project-id` → Resource
-  `service.name` → `"default"`.
+- `opexia.project_id` is the **project slug** from the dashboard's Projects page.
+  It resolves as: span attribute `opexia.project_id` → header
+  `x-opexia-project-id` → Resource `service.name`. A slug that matches no project
+  lands in the workspace's **default** project (the dashboard shows a banner);
+  a deleted project's slug is rejected (`project_deleted` in `partialSuccess`).
 
 ## Route 0 — native OTLP/JSON (your existing / a fresh OTel SDK)
 

@@ -89,7 +89,7 @@ Any other `opexia.*` key dead-letters the span. Allowed keys:
 | `opexia.schema_version` | string | **required**, always `"1.0"` |
 | `opexia.org_id` | string | **required** |
 | `opexia.workspace_id` | string | **required** — the workspace UUID |
-| `opexia.project_id` | string | **required** (default `"default"`) |
+| `opexia.project_id` | string | **required** — the project slug from the Projects page (unknown → default project) |
 | `opexia.trace_id` | string | **required** — 32-hex; keep identical to the OTel trace id |
 | `opexia.user_id` | string | optional generic tag |
 | `opexia.end_user` | string | optional actor id/email → per-user alignment |
