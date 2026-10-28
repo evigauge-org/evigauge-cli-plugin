@@ -1,8 +1,8 @@
-# OpexIA Plugin for Claude Code — Developer Guide
+# Evigauge Plugin for Claude Code — Developer Guide
 
-A step-by-step guide to installing and using the **OpexIA plugin** inside Claude
+A step-by-step guide to installing and using the **Evigauge plugin** inside Claude
 Code. Written for developers on any machine — you do not need to know anything
-about how OpexIA works internally. Follow the steps, run the commands, done.
+about how Evigauge works internally. Follow the steps, run the commands, done.
 
 ---
 
@@ -14,13 +14,13 @@ four capabilities on top:
 
 | Capability | Command | What it does for you |
 |---|---|---|
-| **Instrument for observability** | `/opexia:instrument` | Wires your project to send traces to OpexIA so you can see what your app/agent is doing in the dashboard. |
-| **Token compression** | `/opexia:compress` | Cuts the number of input tokens Claude Code spends reading bulky output — lower cost, more room in context. |
-| **Ship Check (PR gate)** | `opexia shipcheck` | Catches expensive or unsafe prompt/model changes *before* they merge. No AI call, runs in CI. |
-| **Agent map & security audit** | `opexia audit` | Draws a map of your agents/tools/servers and flags security issues. Runs entirely on your machine — nothing leaves it. |
-| **Live savings dashboard** | `opexia live` | A terminal dashboard of your token/$ savings in real time, updating as you work. Local and zero-network by default. |
+| **Instrument for observability** | `/evigauge:instrument` | Wires your project to send traces to Evigauge so you can see what your app/agent is doing in the dashboard. |
+| **Token compression** | `/evigauge:compress` | Cuts the number of input tokens Claude Code spends reading bulky output — lower cost, more room in context. |
+| **Ship Check (PR gate)** | `evigauge shipcheck` | Catches expensive or unsafe prompt/model changes *before* they merge. No AI call, runs in CI. |
+| **Agent map & security audit** | `evigauge audit` | Draws a map of your agents/tools/servers and flags security issues. Runs entirely on your machine — nothing leaves it. |
+| **Live savings dashboard** | `evigauge live` | A terminal dashboard of your token/$ savings in real time, updating as you work. Local and zero-network by default. |
 
-You do **not** need all four. Most teams start with `/opexia:instrument` and add
+You do **not** need all four. Most teams start with `/evigauge:instrument` and add
 the rest when they need them.
 
 ---
@@ -31,16 +31,16 @@ You need:
 
 - **Claude Code** installed and working (you can open it and run `/help`).
 - **Python 3.9+** available on your PATH (`python --version`).
-- Your **OpexIA project credentials** — your team lead / OpexIA admin gives you
+- Your **Evigauge project credentials** — your team lead / Evigauge admin gives you
   these five values:
-  - `OPEXIA_ORG_ID`
-  - `OPEXIA_WORKSPACE_ID`
-  - `OPEXIA_PROJECT_ID`
-  - `OPEXIA_API_KEY`
-  - `OPEXIA_INGEST_URL`
+  - `EVIGAUGE_ORG_ID`
+  - `EVIGAUGE_WORKSPACE_ID`
+  - `EVIGAUGE_PROJECT_ID`
+  - `EVIGAUGE_API_KEY`
+  - `EVIGAUGE_INGEST_URL`
 
 > You do **not** need these five values just to *install* the plugin — only when
-> you run `/opexia:instrument` and want traces to actually reach the dashboard.
+> you run `/evigauge:instrument` and want traces to actually reach the dashboard.
 
 ---
 
@@ -51,7 +51,7 @@ marketplace from GitHub; the second installs it.
 
 ```
 /plugin marketplace add evigauge-org/evigauge-cli-plugin
-/plugin install opexia@opexia
+/plugin install evigauge@evigauge
 ```
 
 That's the whole install. (`evigauge-org/evigauge-cli-plugin` is the GitHub repo —
@@ -64,8 +64,8 @@ from there directly; you don't need to clone anything.)
 /plugin
 ```
 
-You should see **opexia** in the list of installed plugins. That's it — the new
-commands (`/opexia:instrument`, `/opexia:compress`) and tools are now available.
+You should see **evigauge** in the list of installed plugins. That's it — the new
+commands (`/evigauge:instrument`, `/evigauge:compress`) and tools are now available.
 
 > **Restart tip:** if the new commands don't show up right away, fully close and
 > reopen Claude Code so it reloads plugins.
@@ -74,17 +74,17 @@ commands (`/opexia:instrument`, `/opexia:compress`) and tools are now available.
 
 ## 4. Use it
 
-### 4a. Instrument your project — `/opexia:instrument`
+### 4a. Instrument your project — `/evigauge:instrument`
 
 Open Claude Code **inside your project directory**, then run:
 
 ```
-/opexia:instrument
+/evigauge:instrument
 ```
 
 The plugin inspects your project, figures out the right way to connect it to
-OpexIA, and does the wiring for you. It then **verifies** that a real trace
-reaches OpexIA before it reports success — so you're never left guessing whether
+Evigauge, and does the wiring for you. It then **verifies** that a real trace
+reaches Evigauge before it reports success — so you're never left guessing whether
 it worked.
 
 When it's done:
@@ -93,16 +93,16 @@ When it's done:
    writes real secrets for you).
 2. Copy those into your own `.env` and fill in the five values from Section 2.
 3. Re-run the verify step when the plugin asks, and confirm the trace shows up in
-   your OpexIA dashboard.
+   your Evigauge dashboard.
 
 **Useful variations** (just type them as the command):
 
 ```
-/opexia:instrument use direct http
-/opexia:instrument attribute per end user
+/evigauge:instrument use direct http
+/evigauge:instrument attribute per end user
 ```
 
-If you're not sure which to use, run plain `/opexia:instrument` and let the plugin
+If you're not sure which to use, run plain `/evigauge:instrument` and let the plugin
 recommend.
 
 > **Frontend safety:** for browser or mobile apps, the plugin deliberately
@@ -111,10 +111,10 @@ recommend.
 
 ---
 
-### 4b. Save tokens — `/opexia:compress`
+### 4b. Save tokens — `/evigauge:compress`
 
 ```
-/opexia:compress
+/evigauge:compress
 ```
 
 This sets up **token compression** for your Claude Code session. In plain terms:
@@ -135,20 +135,20 @@ For **larger savings** across your whole session (not just tool output), the
 command can point you at an optional companion CLI:
 
 ```
-/opexia:compress proxy
+/evigauge:compress proxy
 ```
 
 ---
 
-### 4c. Guard your PRs — `opexia shipcheck`
+### 4c. Guard your PRs — `evigauge shipcheck`
 
 `shipcheck` is a command-line check you run in your terminal or CI. It reviews a
 prompt / model / config change **before it merges** and tells you the cost and
 safety impact — **without making any AI call**.
 
 ```
-pip install "opexia-trace[shipcheck]"
-opexia shipcheck
+pip install "evigauge-trace[shipcheck]"
+evigauge shipcheck
 ```
 
 Exit codes:
@@ -161,35 +161,35 @@ shipping.
 
 ---
 
-### 4d. Map & audit your agents — `opexia audit`
+### 4d. Map & audit your agents — `evigauge audit`
 
 If your project uses agents, tools, MCP servers, or hooks, this draws a map of the
 whole system and flags security problems.
 
 ```
-pip install opexia-trace
-opexia audit --map agentmap.html
+pip install evigauge-trace
+evigauge audit --map agentmap.html
 ```
 
 It produces a **self-contained, offline HTML map** you can open in any browser. It
 runs **100% on your machine** — no network call, nothing it finds ever leaves your
 computer.
 
-### 4e. Watch savings live — `opexia live`
+### 4e. Watch savings live — `evigauge live`
 
 A live terminal dashboard you leave open in one pane while you work in Claude Code in
 another. It shows, in real time, your **with-pxcore vs without-pxcore** token and $
 savings — so you can see the compression working without opening a web dashboard.
 
 ```
-pip install "opexia-trace[live]"
-opexia live                 # local, zero-network dashboard
-opexia live --local         # force zero-egress even if a key is set
+pip install "evigauge-trace[live]"
+evigauge live                 # local, zero-network dashboard
+evigauge live --local         # force zero-egress even if a key is set
 ```
 
 - The **local view is always on and never touches the network** — it reads pxcore's
   own savings log on your machine (`~/.pxcore/events.jsonl`).
-- If your project has an `OPEXIA_API_KEY` (the one `/opexia:instrument` writes), it
+- If your project has an `EVIGAUGE_API_KEY` (the one `/evigauge:instrument` writes), it
   **also** shows read-only backend panels: model cost comparison, throughput/latency,
   and Savings Advisor flags. `--local` turns that off.
 - Renders cleanly on macOS Terminal / iTerm2, Windows Terminal, and Linux; it falls
@@ -202,19 +202,19 @@ opexia live --local         # force zero-egress even if a key is set
 ```
 # Install
 /plugin marketplace add evigauge-org/evigauge-cli-plugin
-/plugin install opexia@opexia
+/plugin install evigauge@evigauge
 /plugin                         # confirm it's installed
 
 # Use (inside your project)
-/opexia:instrument              # connect project to OpexIA
-/opexia:compress                # turn on token savings
-/opexia:compress proxy          # bigger savings (optional companion CLI)
+/evigauge:instrument              # connect project to Evigauge
+/evigauge:compress                # turn on token savings
+/evigauge:compress proxy          # bigger savings (optional companion CLI)
 
 # Command-line companions
-pip install "opexia-trace[shipcheck]"
-opexia shipcheck                # PR gate: cost/safety of prompt changes
-opexia audit --map agentmap.html   # local agent map + security audit
-opexia live                     # live terminal dashboard of token/$ savings
+pip install "evigauge-trace[shipcheck]"
+evigauge shipcheck                # PR gate: cost/safety of prompt changes
+evigauge audit --map agentmap.html   # local agent map + security audit
+evigauge live                     # live terminal dashboard of token/$ savings
 ```
 
 ---
@@ -223,12 +223,12 @@ opexia live                     # live terminal dashboard of token/$ savings
 
 | Symptom | Do this |
 |---|---|
-| Commands (`/opexia:...`) don't appear | Run `/plugin` to confirm it installed; fully restart Claude Code so plugins reload. |
-| Instrument finished but no traces in the dashboard | Make sure your `.env` has all five `OPEXIA_*` values filled in (not the placeholders), then re-run the verify step. |
+| Commands (`/evigauge:...`) don't appear | Run `/plugin` to confirm it installed; fully restart Claude Code so plugins reload. |
+| Instrument finished but no traces in the dashboard | Make sure your `.env` has all five `EVIGAUGE_*` values filled in (not the placeholders), then re-run the verify step. |
 | "Python not found" | Install Python 3.9+ and make sure `python --version` works in your terminal. |
-| `opexia shipcheck` / `opexia audit` "command not found" | Run `pip install opexia-trace` (add `[shipcheck]` for the PR gate). |
-| Compression doesn't seem to save anything | It only compresses after the one-time setup in `/opexia:compress` confirms it works for your model — until then it safely stays as text. |
-| Still stuck | Contact your OpexIA support contact with the exact command you ran and the message you saw. |
+| `evigauge shipcheck` / `evigauge audit` "command not found" | Run `pip install evigauge-trace` (add `[shipcheck]` for the PR gate). |
+| Compression doesn't seem to save anything | It only compresses after the one-time setup in `/evigauge:compress` confirms it works for your model — until then it safely stays as text. |
+| Still stuck | Contact your Evigauge support contact with the exact command you ran and the message you saw. |
 
 ---
 
@@ -236,7 +236,7 @@ opexia live                     # live terminal dashboard of token/$ savings
 
 - **Your data stays put.** The compression and audit features run locally —
   nothing they process is sent anywhere. Instrumentation sends traces only to the
-  OpexIA endpoint *you* configure.
+  Evigauge endpoint *you* configure.
 - **Secrets are never written for you.** The plugin only writes placeholder names
   into `.env.example`; you fill in the real values in your own `.env`, which should
   stay out of version control.
@@ -245,5 +245,5 @@ opexia live                     # live terminal dashboard of token/$ savings
 
 ---
 
-*Questions your team can't answer? Reach out to your OpexIA contact — include the
+*Questions your team can't answer? Reach out to your Evigauge contact — include the
 command you ran and the exact output you saw.*

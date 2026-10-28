@@ -1,5 +1,5 @@
 {
-  "description": "OpexIA dev-log — nudge Claude to enrich pending commit entries when it finishes a task (no-op unless the repo ran /opexia:log init).",
+  "description": "Evigauge dev-log — nudge Claude to enrich pending commit entries when it finishes a task (no-op unless the repo ran /evigauge:log init).",
   "hooks": {
     "Stop": [
       {

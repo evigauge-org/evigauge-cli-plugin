@@ -1,22 +1,22 @@
 /**
- * OpexIA — verify one span lands with ZERO dead-letters (Node/TS).
+ * Evigauge — verify one span lands with ZERO dead-letters (Node/TS).
  *
  * Run after instrumenting a JS/TS project:  node verify_span.mjs   (or ts-node)
  * POSTs a fully-formed span (explicit query/outcome text + a compound sources
  * field) straight to ingest and asserts it was accepted with nothing dropped.
  * Uses global fetch (Node 18+) — no dependency. Exit 0 = clean.
  *
- * Env: OPEXIA_INGEST_URL / OPEXIA_API_KEY / OPEXIA_ORG_ID / OPEXIA_WORKSPACE_ID
- *      [/ OPEXIA_PROJECT_ID].
+ * Env: EVIGAUGE_INGEST_URL / EVIGAUGE_API_KEY / EVIGAUGE_ORG_ID / EVIGAUGE_WORKSPACE_ID
+ *      [/ EVIGAUGE_PROJECT_ID].
  */
-const base = (process.env.OPEXIA_INGEST_URL ?? "https://ingest.opexia.dev").replace(/\/$/, "");
+const base = (process.env.EVIGAUGE_INGEST_URL ?? "https://ingest.evigauge.ai").replace(/\/$/, "");
 const url = `${base}/v1/traces`;
-const key = process.env.OPEXIA_API_KEY;
-const org = process.env.OPEXIA_ORG_ID;
-const ws = process.env.OPEXIA_WORKSPACE_ID;
-const proj = process.env.OPEXIA_PROJECT_ID ?? "default";
+const key = process.env.EVIGAUGE_API_KEY;
+const org = process.env.EVIGAUGE_ORG_ID;
+const ws = process.env.EVIGAUGE_WORKSPACE_ID;
+const proj = process.env.EVIGAUGE_PROJECT_ID ?? "default";
 
-const missing = [["OPEXIA_API_KEY", key], ["OPEXIA_ORG_ID", org], ["OPEXIA_WORKSPACE_ID", ws]]
+const missing = [["EVIGAUGE_API_KEY", key], ["EVIGAUGE_ORG_ID", org], ["EVIGAUGE_WORKSPACE_ID", ws]]
   .filter(([, v]) => !v).map(([n]) => n);
 if (missing.length) {
   console.error(`FAIL: missing env: ${missing.join(", ")}`);
@@ -37,16 +37,16 @@ const span = {
   end_time_unix_ns: now,
   status_code: "OK",
   attributes: {
-    "opexia.schema_version": "1.0",
-    "opexia.org_id": org,
-    "opexia.workspace_id": ws,
-    "opexia.project_id": proj,
-    "opexia.trace_id": tid,
-    "opexia.node_type": "agent",
-    "opexia.query_text": "opexia verify: does this span land?",       // PLAIN string
-    "opexia.outcome_text": "if you can read this in the dashboard, yes.",
+    "evigauge.schema_version": "1.0",
+    "evigauge.org_id": org,
+    "evigauge.workspace_id": ws,
+    "evigauge.project_id": proj,
+    "evigauge.trace_id": tid,
+    "evigauge.node_type": "agent",
+    "evigauge.query_text": "evigauge verify: does this span land?",       // PLAIN string
+    "evigauge.outcome_text": "if you can read this in the dashboard, yes.",
     // compound field as a JSON STRING — exercises the #1 dead-letter trap
-    "opexia.sources": JSON.stringify({
+    "evigauge.sources": JSON.stringify({
       consulted: ["https://example.com/a"], used: ["https://example.com/a"],
       dropped: [], scores: { "https://example.com/a": 0.9 },
     }),
@@ -62,7 +62,7 @@ const main = async () => {
   try {
     r = await fetch(url, {
       method: "POST",
-      headers: { "x-opexia-api-key": key!, "content-type": "application/json" },
+      headers: { "x-evigauge-api-key": key!, "content-type": "application/json" },
       body: JSON.stringify([span]),
     });
   } catch (e) {
@@ -88,13 +88,13 @@ const main = async () => {
   if (rejected || accepted < 1) {
     console.error(`FAIL: span dead-lettered. accepted=${accepted} rejected=${rejected} ` +
       `reason=${body.partialSuccess?.errorMessage ?? JSON.stringify(body)}`);
-    console.error("  -> check RULE 0/1: nested-object attribute? unknown opexia.* key? " +
+    console.error("  -> check RULE 0/1: nested-object attribute? unknown evigauge.* key? " +
       "compound field not JSON.stringify'd?");
     process.exit(1);
   }
   console.log(`OK: span accepted, 0 dead-letters. trace_id=${tid}`);
   console.log(`    accepted=${accepted} rejected=${rejected}`);
-  console.log("    Open the OpexIA dashboard for this workspace and confirm the trace " +
+  console.log("    Open the Evigauge dashboard for this workspace and confirm the trace " +
     "appears with non-empty query/outcome text.");
   process.exit(0);
 };

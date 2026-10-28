@@ -1,4 +1,4 @@
-# OpexIA Dev-Log — a relational graph of how this product was built
+# Evigauge Dev-Log — a relational graph of how this product was built
 
 This directory is a **local, committed knowledge graph of the development history**
 of this codebase. Every git commit is a node on a temporal backbone; tasks,
@@ -7,14 +7,14 @@ breaks, an agent (or you) loads the graph, finds a seed node, and **traverses th
 relations** to reconstruct what happened, in which commit, at what time, why, and
 what it affected.
 
-It is written and maintained automatically by the OpexIA Claude Code plugin
-(`/opexia:log`). Nothing here leaves your machine — it is plain files, committed
+It is written and maintained automatically by the Evigauge Claude Code plugin
+(`/evigauge:log`). Nothing here leaves your machine — it is plain files, committed
 to your repo, so the full record travels start → production with the code.
 
 ## Layout
 
 ```
-.opexia/devlog/
+.evigauge/devlog/
   entries/<date>-<sha7>-<slug>.md   # one node per commit/task/decision/bug (SOURCE OF TRUTH)
   graph.jsonl                        # derived nodes+edges index — what an agent loads to traverse
   rebuild_graph.py                   # regenerates graph.jsonl from entries/
@@ -22,7 +22,7 @@ to your repo, so the full record travels start → production with the code.
 ```
 
 Entries are the source of truth (edit these). `graph.jsonl` is **derived** — run
-`python .opexia/devlog/rebuild_graph.py` to regenerate it after editing entries.
+`python .evigauge/devlog/rebuild_graph.py` to regenerate it after editing entries.
 
 ## Node types
 
@@ -83,11 +83,11 @@ relations:
 
 `enriched: false` marks a commit stub that the post-commit hook wrote but whose
 reasoning Claude has not filled in yet. The plugin's Stop hook nudges Claude to
-enrich these; you can also run `/opexia:log` to do it on demand.
+enrich these; you can also run `/evigauge:log` to do it on demand.
 
 ## Querying
 
-Ask Claude: `/opexia:log query "what happened in auth and why did refresh break?"`
+Ask Claude: `/evigauge:log query "what happened in auth and why did refresh break?"`
 It loads `graph.jsonl`, seeds on the relevant nodes (by tag/component/sha/time),
 walks the typed edges, reads the matched entries, and answers with the causal
 chain — commit, timestamp, logic, and the decisions behind it.

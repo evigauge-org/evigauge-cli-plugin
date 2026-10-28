@@ -1,19 +1,19 @@
 {
-  "name": "opexia",
+  "name": "evigauge",
   "owner": {
-    "name": "OpexIA"
+    "name": "Evigauge"
   },
-  "description": "OpexIA developer tools for agentic coding CLIs.",
+  "description": "Evigauge developer tools for agentic coding CLIs.",
   "plugins": [
     {
-      "name": "opexia",
+      "name": "evigauge",
       "source": ".",
-      "displayName": "OpexIA Instrument",
-      "description": "Detects your stack and instruments it for OpexIA observability the right way, then verifies a span lands with zero dead-letters.",
+      "displayName": "Evigauge Instrument",
+      "description": "Detects your stack and instruments it for Evigauge observability the right way, then verifies a span lands with zero dead-letters.",
       "category": "observability",
       "tags": ["observability", "opentelemetry", "otlp", "tracing", "llm", "agents"],
-      "homepage": "https://opexia.dev",
-      "license": "LicenseRef-OpexIA-Proprietary"
+      "homepage": "https://evigauge.ai",
+      "license": "LicenseRef-Evigauge-Proprietary"
     }
   ]
 }

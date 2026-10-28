@@ -1,15 +1,15 @@
-OpexIA Instrument Plugin — Proprietary License
-Copyright (c) 2026 OpexIA. All rights reserved.
+Evigauge Instrument Plugin — Proprietary License
+Copyright (c) 2026 Evigauge. All rights reserved.
 
-This software and its accompanying files (the "Plugin") are proprietary to OpexIA.
+This software and its accompanying files (the "Plugin") are proprietary to Evigauge.
 The Plugin is licensed, not sold. This is NOT open-source software.
 
 1. LICENSE GRANT.
-   Subject to your continuous compliance with this License, OpexIA grants you a
+   Subject to your continuous compliance with this License, Evigauge grants you a
    limited, non-exclusive, non-transferable, non-sublicensable, revocable license
    to download, install, and use the Plugin in your own development environment
    and coding tools solely to instrument your own applications for use with the
-   OpexIA service. Installing the Plugin into your own environment for your own
+   Evigauge service. Installing the Plugin into your own environment for your own
    use is permitted.
 
 2. RESTRICTIONS.
@@ -28,13 +28,13 @@ The Plugin is licensed, not sold. This is NOT open-source software.
    (e) use the Plugin to build or assist a competing product or service.
 
 3. OWNERSHIP.
-   The Plugin is and remains the exclusive property of OpexIA. OpexIA retains all
+   The Plugin is and remains the exclusive property of Evigauge. Evigauge retains all
    right, title, and interest in and to the Plugin, including all intellectual
    property rights therein. No rights are granted except as expressly set out here.
 
 4. THIRD-PARTY COMPONENTS.
    The Plugin references and interoperates with separately licensed software
-   (for example, the "opexia-trace" package and OpenTelemetry libraries). Those
+   (for example, the "evigauge-trace" package and OpenTelemetry libraries). Those
    components are governed by their own licenses; this License covers only the
    Plugin's own files.
 
@@ -44,7 +44,7 @@ The Plugin is licensed, not sold. This is NOT open-source software.
    MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, AND NONINFRINGEMENT.
 
 6. LIMITATION OF LIABILITY.
-   TO THE MAXIMUM EXTENT PERMITTED BY LAW, IN NO EVENT SHALL OPEXIA BE LIABLE FOR
+   TO THE MAXIMUM EXTENT PERMITTED BY LAW, IN NO EVENT SHALL EVIGAUGE BE LIABLE FOR
    ANY CLAIM, DAMAGES, OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT, OR OTHERWISE,
    ARISING FROM, OUT OF, OR IN CONNECTION WITH THE PLUGIN OR THE USE OR OTHER
    DEALINGS IN THE PLUGIN.
@@ -54,4 +54,4 @@ The Plugin is licensed, not sold. This is NOT open-source software.
    terms. Upon termination you must cease all use of the Plugin and destroy all
    copies in your possession or control. Sections 2 through 6 survive termination.
 
-For licensing inquiries, contact OpexIA at https://opexia.dev.
+For licensing inquiries, contact Evigauge at https://evigauge.ai.

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Rebuild .opexia/devlog/graph.jsonl from the entry files (the source of truth).
+"""Rebuild .evigauge/devlog/graph.jsonl from the entry files (the source of truth).
 
 The entries (Markdown + YAML-ish frontmatter) are what humans and Claude edit.
 This script materialises them into a single append-free graph index that a
@@ -20,7 +20,7 @@ import json
 import sys
 from pathlib import Path
 
-DEVLOG = Path(".opexia/devlog")
+DEVLOG = Path(".evigauge/devlog")
 ENTRIES = DEVLOG / "entries"
 OUT = DEVLOG / "graph.jsonl"
 

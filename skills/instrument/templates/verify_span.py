@@ -1,16 +1,16 @@
-"""OpexIA — verify one span lands with ZERO dead-letters (Python).
+"""Evigauge — verify one span lands with ZERO dead-letters (Python).
 
 Run this after instrumenting. It POSTs a fully-formed test span (explicit
 query_text/outcome_text + a compound sources field, so it exercises the wire
 contract) and asserts the ingest ACCEPTED it and dead-lettered nothing.
 
-Because every OpexIA failure mode is silent (HTTP 202, then dropped), this is
+Because every Evigauge failure mode is silent (HTTP 202, then dropped), this is
 the only honest proof that instrumentation works. Exit 0 = clean.
 
     python verify_span.py
 
-Needs: httpx, and env OPEXIA_INGEST_URL / OPEXIA_API_KEY / OPEXIA_ORG_ID /
-OPEXIA_WORKSPACE_ID [/ OPEXIA_PROJECT_ID].
+Needs: httpx, and env EVIGAUGE_INGEST_URL / EVIGAUGE_API_KEY / EVIGAUGE_ORG_ID /
+EVIGAUGE_WORKSPACE_ID [/ EVIGAUGE_PROJECT_ID].
 """
 import json
 import os
@@ -20,15 +20,15 @@ import uuid
 
 import httpx
 
-base = os.environ.get("OPEXIA_INGEST_URL", "https://ingest.opexia.dev").rstrip("/")
+base = os.environ.get("EVIGAUGE_INGEST_URL", "https://ingest.evigauge.ai").rstrip("/")
 url = f"{base}/v1/traces"
-key = os.environ.get("OPEXIA_API_KEY")
-org = os.environ.get("OPEXIA_ORG_ID")
-ws = os.environ.get("OPEXIA_WORKSPACE_ID")
-proj = os.environ.get("OPEXIA_PROJECT_ID", "default")
+key = os.environ.get("EVIGAUGE_API_KEY")
+org = os.environ.get("EVIGAUGE_ORG_ID")
+ws = os.environ.get("EVIGAUGE_WORKSPACE_ID")
+proj = os.environ.get("EVIGAUGE_PROJECT_ID", "default")
 
-missing = [n for n, v in (("OPEXIA_API_KEY", key), ("OPEXIA_ORG_ID", org),
-                          ("OPEXIA_WORKSPACE_ID", ws)) if not v]
+missing = [n for n, v in (("EVIGAUGE_API_KEY", key), ("EVIGAUGE_ORG_ID", org),
+                          ("EVIGAUGE_WORKSPACE_ID", ws)) if not v]
 if missing:
     print(f"FAIL: missing env: {', '.join(missing)}")
     sys.exit(2)
@@ -45,16 +45,16 @@ span = {
     "end_time_unix_ns": now,
     "status_code": "OK",
     "attributes": {
-        "opexia.schema_version": "1.0",
-        "opexia.org_id": org,
-        "opexia.workspace_id": ws,
-        "opexia.project_id": proj,
-        "opexia.trace_id": tid,
-        "opexia.node_type": "agent",
-        "opexia.query_text": "opexia verify: does this span land?",   # PLAIN string
-        "opexia.outcome_text": "if you can read this in the dashboard, yes.",
+        "evigauge.schema_version": "1.0",
+        "evigauge.org_id": org,
+        "evigauge.workspace_id": ws,
+        "evigauge.project_id": proj,
+        "evigauge.trace_id": tid,
+        "evigauge.node_type": "agent",
+        "evigauge.query_text": "evigauge verify: does this span land?",   # PLAIN string
+        "evigauge.outcome_text": "if you can read this in the dashboard, yes.",
         # compound field as a JSON STRING — exercises the #1 dead-letter trap
-        "opexia.sources": json.dumps({
+        "evigauge.sources": json.dumps({
             "consulted": ["https://example.com/a"], "used": ["https://example.com/a"],
             "dropped": [], "scores": {"https://example.com/a": 0.9}}),
         "gen_ai.system": "openai",
@@ -65,7 +65,7 @@ span = {
 }
 
 try:
-    r = httpx.post(url, headers={"x-opexia-api-key": key,
+    r = httpx.post(url, headers={"x-evigauge-api-key": key,
                                  "content-type": "application/json"},
                    content=json.dumps([span]).encode("utf-8"), timeout=20.0)
 except Exception as e:
@@ -92,12 +92,12 @@ if rejected or accepted < 1:
     ps = body.get("partialSuccess", {})
     print(f"FAIL: span dead-lettered. accepted={accepted} rejected={rejected} "
           f"reason={ps.get('errorMessage', body)}")
-    print("  -> check SKILL RULE 0/1: nested-object attribute? unknown opexia.* key? "
+    print("  -> check SKILL RULE 0/1: nested-object attribute? unknown evigauge.* key? "
           "compound field not JSON.stringify'd?")
     sys.exit(1)
 
 print(f"OK: span accepted, 0 dead-letters. trace_id={tid}")
 print(f"    accepted={accepted} rejected={rejected}")
-print("    Open the OpexIA dashboard for this workspace and confirm the trace "
+print("    Open the Evigauge dashboard for this workspace and confirm the trace "
       "appears with non-empty query/outcome text.")
 sys.exit(0)

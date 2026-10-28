@@ -1,16 +1,16 @@
-"""OpexIA — direct HTTP emitter (Route 1). Any Python, only httpx required.
+"""Evigauge — direct HTTP emitter (Route 1). Any Python, only httpx required.
 
 Install:  pip install httpx
 
-POSTs a bare JSON ARRAY of flat span objects to $OPEXIA_INGEST_URL/v1/traces.
+POSTs a bare JSON ARRAY of flat span objects to $EVIGAUGE_INGEST_URL/v1/traces.
 No OpenTelemetry, no collector. Ideal for edge functions, workers, or any place
 a tracing SDK is unwelcome.
 
 Wire contract (SKILL RULE 0/1):
   * flat dotted attribute keys, primitive values
-  * compound fields (opexia.sources / opexia.decision) are json.dumps STRINGS
+  * compound fields (evigauge.sources / evigauge.decision) are json.dumps STRINGS
   * query_text / outcome_text are PLAIN strings
-  * one unknown opexia.* key OR a nested-object value => the whole span dead-letters
+  * one unknown evigauge.* key OR a nested-object value => the whole span dead-letters
 """
 import json
 import os
@@ -20,12 +20,12 @@ from typing import Optional
 
 import httpx
 
-INGEST_BASE = os.environ.get("OPEXIA_INGEST_URL", "https://ingest.opexia.dev").rstrip("/")
+INGEST_BASE = os.environ.get("EVIGAUGE_INGEST_URL", "https://ingest.evigauge.ai").rstrip("/")
 INGEST_URL = f"{INGEST_BASE}/v1/traces"
-API_KEY = os.environ["OPEXIA_API_KEY"]
-ORG_ID = os.environ["OPEXIA_ORG_ID"]
-WORKSPACE_ID = os.environ["OPEXIA_WORKSPACE_ID"]
-PROJECT_ID = os.environ.get("OPEXIA_PROJECT_ID", "default")
+API_KEY = os.environ["EVIGAUGE_API_KEY"]
+ORG_ID = os.environ["EVIGAUGE_ORG_ID"]
+WORKSPACE_ID = os.environ["EVIGAUGE_WORKSPACE_ID"]
+PROJECT_ID = os.environ.get("EVIGAUGE_PROJECT_ID", "default")
 
 _FMT = "%Y-%m-%d %H:%M:%S.%f"
 
@@ -39,14 +39,14 @@ def new_span_id() -> str:
 
 
 def render_prompt(messages: list) -> str:
-    """Render an LLM call's messages into `opexia.query_text`.
+    """Render an LLM call's messages into `evigauge.query_text`.
 
-    ON AN LLM SPAN, query_text IS THE PROMPT — it is what OpexIA versions, evaluates,
+    ON AN LLM SPAN, query_text IS THE PROMPT — it is what Evigauge versions, evaluates,
     and measures a cacheable prefix from.
 
     DO NOT do `" ".join(m["content"] for m in messages)`. Without a role boundary
     there is nothing separating the authored system prompt from the per-call user
-    content, so OpexIA cannot mask the per-call parts out when deriving the prompt's
+    content, so Evigauge cannot mask the per-call parts out when deriving the prompt's
     identity — and EVERY CALL then hashes as its own "prompt". The Prompts page fills
     with thousands of one-call rows instead of one prompt with a version history.
     """
@@ -86,32 +86,32 @@ def build_span(
 ) -> dict:
     # --- required tenancy envelope (flat dotted, primitive values) ---
     attrs: dict = {
-        "opexia.schema_version": "1.0",
-        "opexia.org_id": ORG_ID,
-        "opexia.workspace_id": WORKSPACE_ID,
-        "opexia.project_id": PROJECT_ID,
-        "opexia.trace_id": trace_id,     # keep identical to trace_id
+        "evigauge.schema_version": "1.0",
+        "evigauge.org_id": ORG_ID,
+        "evigauge.workspace_id": WORKSPACE_ID,
+        "evigauge.project_id": PROJECT_ID,
+        "evigauge.trace_id": trace_id,     # keep identical to trace_id
     }
     if reasoning_role:
-        attrs["opexia.reasoning_role"] = reasoning_role
+        attrs["evigauge.reasoning_role"] = reasoning_role
     if node_type:
-        attrs["opexia.node_type"] = node_type
+        attrs["evigauge.node_type"] = node_type
     if end_user:
-        attrs["opexia.end_user"] = end_user
+        attrs["evigauge.end_user"] = end_user
     if query_text:
-        attrs["opexia.query_text"] = query_text[:16384]        # PLAIN string
+        attrs["evigauge.query_text"] = query_text[:16384]        # PLAIN string
     if outcome_text:
-        attrs["opexia.outcome_text"] = outcome_text[:16384]     # PLAIN string
-    # Prompt identity — FLAT keys. `opexia.prompt.id` (dotted) is NOT in the envelope
+        attrs["evigauge.outcome_text"] = outcome_text[:16384]     # PLAIN string
+    # Prompt identity — FLAT keys. `evigauge.prompt.id` (dotted) is NOT in the envelope
     # and would dead-letter the whole span.
     if prompt_id:
-        attrs["opexia.prompt_id"] = prompt_id
+        attrs["evigauge.prompt_id"] = prompt_id
     if prompt_label:
-        attrs["opexia.prompt_label"] = prompt_label
+        attrs["evigauge.prompt_label"] = prompt_label
     if prompt_version:
-        attrs["opexia.prompt_version"] = prompt_version
+        attrs["evigauge.prompt_version"] = prompt_version
 
-    # gen_ai.* — standard OpenTelemetry GenAI names (NOT under opexia extra=forbid)
+    # gen_ai.* — standard OpenTelemetry GenAI names (NOT under evigauge extra=forbid)
     if gen_ai_system:
         attrs["gen_ai.system"] = gen_ai_system
     if model:
@@ -127,14 +127,14 @@ def build_span(
 
     # Compound fields go on the wire as JSON STRINGS (a dict here kills the span).
     if sources is not None:
-        attrs["opexia.sources"] = json.dumps({
+        attrs["evigauge.sources"] = json.dumps({
             "consulted": sources.get("consulted", []),   # list[str], not objects
             "used": sources.get("used", []),
             "dropped": sources.get("dropped", []),
             "scores": sources.get("scores", {}),
         })
     if decision is not None:
-        attrs["opexia.decision"] = json.dumps({
+        attrs["evigauge.decision"] = json.dumps({
             "rules_fired": decision.get("rules_fired", []),
             "scores": decision.get("scores", {}),
             "selected": decision.get("selected"),
@@ -142,7 +142,7 @@ def build_span(
         })
     # cost: flat dotted scalars, NOT a nested object.
     if cost_usd is not None:
-        attrs["opexia.cost.usd"] = float(cost_usd)
+        attrs["evigauge.cost.usd"] = float(cost_usd)
 
     return {
         "trace_id": trace_id,
@@ -160,7 +160,7 @@ def send(spans: list[dict]) -> httpx.Response:
     inspect the body for partialSuccess / rejected counts (see verify_span.py)."""
     r = httpx.post(
         INGEST_URL,
-        headers={"x-opexia-api-key": API_KEY, "content-type": "application/json"},
+        headers={"x-evigauge-api-key": API_KEY, "content-type": "application/json"},
         content=json.dumps(spans).encode("utf-8"),
         timeout=15.0,
     )

@@ -3,7 +3,7 @@
 # A spec-compliant MCP server that exposes pxcore's imaged-result tools. STDLIB ONLY: an MCP
 # server receives JSON-RPC and returns content; it makes no outbound call, so it needs no
 # HTTP client. Cross-language reach is delivered by MCP itself — a TypeScript / Next.js dev
-# consumes it with the standard `@modelcontextprotocol/sdk`, no OpexIA package required.
+# consumes it with the standard `@modelcontextprotocol/sdk`, no Evigauge package required.
 #
 # Two transports, same handler:
 #   - stdio  (local dev, coding CLIs) — the default.

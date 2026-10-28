@@ -1,12 +1,12 @@
 ---
 name: secure
-description: Audit this project's system instructions for prompt-injection susceptibility and, only with the user's explicit go-ahead, apply the mitigations. Use when the user wants to harden prompts against prompt injection, run the OpexIA prompt-injection audit, check CLAUDE.md / system prompts / agent instructions for injection weaknesses, or asks "are my prompts injection-safe". Runs `opexia audit` locally (zero network, zero LLM), reads the local report, presents each finding with its injection type and mitigation, and writes fixes ONLY after the user says yes.
-when_to_use: "Hardening an agentic app's system instructions against prompt injection; running the OpexIA injection-susceptibility audit; interpreting and applying its mitigations under human review."
+description: Audit this project's system instructions for prompt-injection susceptibility and, only with the user's explicit go-ahead, apply the mitigations. Use when the user wants to harden prompts against prompt injection, run the Evigauge prompt-injection audit, check CLAUDE.md / system prompts / agent instructions for injection weaknesses, or asks "are my prompts injection-safe". Runs `evigauge audit` locally (zero network, zero LLM), reads the local report, presents each finding with its injection type and mitigation, and writes fixes ONLY after the user says yes.
+when_to_use: "Hardening an agentic app's system instructions against prompt injection; running the Evigauge injection-susceptibility audit; interpreting and applying its mitigations under human review."
 user-invocable: true
 argument-hint: "[optional: a path/glob to focus, or 'audit only' to skip applying fixes]"
 ---
 
-# OpexIA Secure — prompt-injection susceptibility audit + guided mitigation
+# Evigauge Secure — prompt-injection susceptibility audit + guided mitigation
 
 You are auditing **this** project's system instructions for prompt-injection
 susceptibility and then, **only with the user's explicit consent**, writing the
@@ -19,11 +19,11 @@ Free-form user instruction (if any): `$ARGUMENTS`
 
 ## RULE 0 — the two hard constraints, both non-negotiable
 
-1. **Zero egress.** `opexia audit` makes **no network call and no LLM call**, and the
+1. **Zero egress.** `evigauge audit` makes **no network call and no LLM call**, and the
    full report it writes is a precise map of where the app is weak — an attacker's
    to-do list. It is written to a **local** path only. **Never** post it, paste its
    evidence into a PR comment, upload it, or send any finding to a model to
-   adjudicate. If the user later runs this inside `opexia shipcheck`, only the verdict
+   adjudicate. If the user later runs this inside `evigauge shipcheck`, only the verdict
    and finding *categories* reach the shared PR comment — never the evidence. Preserve
    that boundary in everything you output.
 2. **No silent edits — HITL is mandatory.** You **audit** freely, but you do **not**
@@ -99,12 +99,12 @@ secret into your output, do not echo it, do not put it in a diff.
 
 ## RULE 4 — install and run the audit
 
-`opexia audit` ships in `opexia-trace` and is **pure stdlib** (no extra needed for the
+`evigauge audit` ships in `evigauge-trace` and is **pure stdlib** (no extra needed for the
 injection report; the `[shipcheck]` extra is only for reading a YAML policy).
 
 ```bash
-pip install --upgrade --pre opexia-trace           # if not already installed
-opexia audit --repo . --injection-report .opexia/prompt-injection-audit.md
+pip install --upgrade --pre evigauge-trace           # if not already installed
+evigauge audit --repo . --injection-report .evigauge/prompt-injection-audit.md
 ```
 
 - Default `--mode warn` **exits 0** even with findings, so the command completes and
@@ -114,7 +114,7 @@ opexia audit --repo . --injection-report .opexia/prompt-injection-audit.md
   prompt-injection report to the local `--injection-report` path. Read that file.
 - Scope: `$ARGUMENTS` may name a path/glob to focus on, or say "audit only" — in which
   case run the audit, present the findings, and **stop before RULE 2's edits**.
-- If `opexia audit` cannot run (not installed and no network to install), say so and
+- If `evigauge audit` cannot run (not installed and no network to install), say so and
   give the exact command — do not hand-roll a scan or guess findings.
 
 ---
@@ -124,7 +124,7 @@ opexia audit --repo . --injection-report .opexia/prompt-injection-audit.md
 1. **Locate the instructions.** Note the system-instruction files the audit will see:
    `CLAUDE.md`/`AGENTS.md`/`GEMINI.md`/`.cursorrules`, `.claude/agents/*.md`, skills,
    in-code `system=`/`SYSTEM_PROMPT`/`{"role":"system"}` literals, and any `prompts:`
-   files in `.opexia/shipcheck.yml`. State what you expect it to cover.
+   files in `.evigauge/shipcheck.yml`. State what you expect it to cover.
 2. **Run the audit** (RULE 4). Read the local report file.
 3. **Report the coverage line honestly** — how many instructions were audited, and how
    many non-literal prompt sites could **not** be read statically (the named gap).

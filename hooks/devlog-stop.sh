@@ -1,10 +1,10 @@
 #!/bin/bash
-# OpexIA dev-log — Stop hook.
+# Evigauge dev-log — Stop hook.
 #
 # When Claude finishes a task in a repo that has opted into the dev-log, this
 # nudges Claude to enrich any commit entries the post-commit hook left as stubs
 # (enriched: false) — filling the reasoning/logic and wiring the semantic graph
-# edges. It blocks the stop with an instruction (Claude then runs the opexia:log
+# edges. It blocks the stop with an instruction (Claude then runs the evigauge:log
 # enrich flow), and gives up after 2 no-progress rounds so it can NEVER loop.
 #
 # Fail-open everywhere: any problem => allow the stop (exit 0). Telemetry about
@@ -14,7 +14,7 @@ set +e
 
 HOOK_INPUT=$(cat 2>/dev/null)
 
-DEVLOG=".opexia/devlog"
+DEVLOG=".evigauge/devlog"
 ENTRIES="$DEVLOG/entries"
 [ -d "$ENTRIES" ] || exit 0                     # repo hasn't opted in — allow stop
 
@@ -47,15 +47,15 @@ fi
 
 if [ "$ATTEMPTS" -ge 2 ] 2>/dev/null; then
   # Two no-progress rounds — stop nagging so we never trap the session.
-  echo "OpexIA dev-log: $COUNT entr(ies) still un-enriched; not blocking again this session. Run /opexia:log to finish." >&2
+  echo "Evigauge dev-log: $COUNT entr(ies) still un-enriched; not blocking again this session. Run /evigauge:log to finish." >&2
   exit 0
 fi
 
 NEXT=$((ATTEMPTS + 1))
 printf '%s %s %s\n' "$SESSION" "$COUNT" "$NEXT" > "$STATE" 2>/dev/null
 
-REASON="The OpexIA dev-log has ${COUNT} commit entr(ies) awaiting reasoning (enriched: false) under .opexia/devlog/entries/. Invoke the opexia:log skill and enrich them: for each pending entry fill What / Why-Logic / Decisions / Agent, add the semantic relations (implements, touches, driven_by, fixes), set enriched: true, then run the graph rebuild. After that you may stop."
-MSG="OpexIA dev-log: enriching ${COUNT} pending commit entr(ies)"
+REASON="The Evigauge dev-log has ${COUNT} commit entr(ies) awaiting reasoning (enriched: false) under .evigauge/devlog/entries/. Invoke the evigauge:log skill and enrich them: for each pending entry fill What / Why-Logic / Decisions / Agent, add the semantic relations (implements, touches, driven_by, fixes), set enriched: true, then run the graph rebuild. After that you may stop."
+MSG="Evigauge dev-log: enriching ${COUNT} pending commit entr(ies)"
 
 # Stop-hook contract: block the stop and feed 'reason' back to Claude as the
 # instruction to act on. No jq — REASON/MSG are controlled, quote/newline-free.

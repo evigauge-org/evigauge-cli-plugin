@@ -1,12 +1,12 @@
-# OpexIA Instrument — coding-CLI plugin
+# Evigauge Instrument — coding-CLI plugin
 
-An agentic plugin that wires any project into **OpexIA observability** correctly.
-Install it into your coding CLI (Claude Code), then run `/opexia:instrument` — it
+An agentic plugin that wires any project into **Evigauge observability** correctly.
+Install it into your coding CLI (Claude Code), then run `/evigauge:instrument` — it
 detects your stack, picks the right integration route, writes the code and env,
 and **verifies a span lands with zero dead-letters** before it calls the job done.
 
 It is *packaged expertise*, not a code generator: the plugin gives your CLI the
-OpexIA integration decision tree, the exact wire contract, and every silent
+Evigauge integration decision tree, the exact wire contract, and every silent
 dead-letter trap, and the CLI's agent instruments your actual code from it.
 
 ## What it does
@@ -14,17 +14,17 @@ dead-letter trap, and the CLI's agent instruments your actual code from it.
 - **Detects** the stack: Python, Next.js, generic Node/TS, React (browser),
   React Native.
 - **Picks and explains** the route:
-  - Python greenfield → the `opexia-trace` SDK (`transport="direct"`).
+  - Python greenfield → the `evigauge-trace` SDK (`transport="direct"`).
   - Python already on OpenTelemetry → native OTLP/JSON.
-  - Next.js / Node → native OTLP/JSON (there is **no** `@opexia/trace` npm
+  - Next.js / Node → native OTLP/JSON (there is **no** `@evigauge/trace` npm
     package; JS uses standard OpenTelemetry JS + the bundled attribute kit).
   - Anything with an HTTP client → direct HTTP.
   - Browser React / React Native → **refuses the client path** and routes through
     a server, so your API key never ships in a client bundle.
-- **Installs** the dependency, pinned correctly (`--pre`, `opexia-trace>=0.1.0a13`).
-- **Instruments** your code and enriches spans with the `opexia.*` intelligence
+- **Installs** the dependency, pinned correctly (`--pre`, `evigauge-trace>=0.1.0a13`).
+- **Instruments** your code and enriches spans with the `evigauge.*` intelligence
   attributes (sources, decision, reasoning, query/outcome text).
-- **Renders prompts so they can be versioned** — on an LLM span, `opexia.query_text`
+- **Renders prompts so they can be versioned** — on an LLM span, `evigauge.query_text`
   *is the prompt*. The plugin knows to render it with role headers rather than
   space-joining the messages, which is the difference between one prompt with a
   version history and thousands of one-call rows in your Prompts page.
@@ -33,7 +33,7 @@ dead-letter trap, and the CLI's agent instruments your actual code from it.
 
 ## Ship Check — the PR gate that comes with it
 
-Once your prompts are traced, `opexia shipcheck` (ships in `opexia-trace`) checks a
+Once your prompts are traced, `evigauge shipcheck` (ships in `evigauge-trace`) checks a
 prompt / model / config change **before it merges**. It makes **no LLM call** and
 never re-runs your agent — it compares the candidate against the traces you already
 sent and does arithmetic:
@@ -46,25 +46,25 @@ sent and does arithmetic:
   `.cursorrules` or an MCP config **shipping inside your production artifact**.
 
 ```bash
-pip install "opexia-trace[shipcheck]"
-opexia shipcheck            # exit 1 = the policy failed; 2 = the check could not run
+pip install "evigauge-trace[shipcheck]"
+evigauge shipcheck            # exit 1 = the policy failed; 2 = the check could not run
 ```
 
-Set `opexia.prompt_id` on your LLM spans (the plugin will offer to) so the gate can
+Set `evigauge.prompt_id` on your LLM spans (the plugin will offer to) so the gate can
 match a changed prompt to its baseline exactly.
 
 ## Agent map & security audit — for the agentic projects this plugin instruments
 
 The projects this plugin targets — apps with MCP servers, subagents, tools, and
-hooks — are exactly the ones with an agent-security attack surface. `opexia audit`
-(ships in `opexia-trace`, and runs automatically as a third gate of `opexia
+hooks — are exactly the ones with an agent-security attack surface. `evigauge audit`
+(ships in `evigauge-trace`, and runs automatically as a third gate of `evigauge
 shipcheck`) maps that whole system and audits it against the NSA's *Model Context
 Protocol: Security Design Considerations*. It is **100% local and zero-egress: no
 network call, no LLM, and nothing it finds ever leaves your machine** — a
 vulnerability report must not itself disclose the vulnerability.
 
 ```bash
-opexia audit --map agentmap.html    # writes a self-contained, offline HTML map
+evigauge audit --map agentmap.html    # writes a self-contained, offline HTML map
 ```
 
 It draws your agents / servers / tools / hooks as an interactive map coloured by
@@ -73,16 +73,16 @@ descriptions (incl. **hidden-unicode** injection), cleartext credentials (shape
 only, never the value), **unpinned `npx -y` / `uvx` servers** that run arbitrary
 code on boot, shell-spawning servers, tool-name collisions, and **exfiltration
 paths** where a secret can reach an external endpoint. Its headline is a committed
-`.opexia/agentmap.lock`: a trusted server silently changing its tools — the
-"rug-pull" — becomes a reviewable **diff in your PR**. When run inside `opexia
+`.evigauge/agentmap.lock`: a trusted server silently changing its tools — the
+"rug-pull" — becomes a reviewable **diff in your PR**. When run inside `evigauge
 shipcheck`, the PR comment gets the verdict and finding *categories* only; the
 evidence stays local, never posted.
 
-## `/opexia:secure` — prompt-injection hardening, under human review
+## `/evigauge:secure` — prompt-injection hardening, under human review
 
 The same audit checks whether **every system instruction** in the project is
 defenseless against injection arriving at runtime — and names the injection **type**
-and the exact **mitigation** for each gap. `/opexia:secure` runs it, reads the local
+and the exact **mitigation** for each gap. `/evigauge:secure` runs it, reads the local
 report, and walks you through the findings:
 
 - **Covers every instruction:** `CLAUDE.md`/`AGENTS.md`/`.cursorrules`, `.claude/agents`,
@@ -98,11 +98,11 @@ report, and walks you through the findings:
   yes.** A secret is flagged with a rotate-your-key warning, never auto-edited.
 
 ```
-/opexia:secure                 # audit, then apply mitigations you approve
-/opexia:secure audit only      # report the findings, change nothing
+/evigauge:secure                 # audit, then apply mitigations you approve
+/evigauge:secure audit only      # report the findings, change nothing
 ```
 
-Enforce it on every PR via the `audit.injection` policy block in `.opexia/shipcheck.yml`
+Enforce it on every PR via the `audit.injection` policy block in `.evigauge/shipcheck.yml`
 (`mode: warn` by default; `mode: fail` returns exit 1 and blocks the push). Like the map
 audit, it is **100% local and zero-egress** — the full report is an attacker's roadmap,
 so it never leaves your machine.
@@ -117,7 +117,7 @@ tokens — while keeping anything the model must reproduce verbatim (ids, paths,
 you edit) as text. Deterministic, **no LLM in the compression path**, and **nothing it
 processes leaves the machine**.
 
-Run `/opexia:compress` to set it up. **Two honest gates before it actually compresses** (until
+Run `/evigauge:compress` to set it up. **Two honest gates before it actually compresses** (until
 then it safely returns text):
 
 1. **Calibrate the active model.** The shipped Fable-5 profile is *provisional* — it images
@@ -128,14 +128,14 @@ then it safely returns text):
 
 For bigger savings (the system prompt + history, which an MCP tool can't reach), run the
 separate **`pxcore-proxy`** CLI and point Claude Code at it with `ANTHROPIC_BASE_URL` — see
-`/opexia:compress proxy`. The proxy is a standalone CLI (needs `httpx`), not part of this
+`/evigauge:compress proxy`. The proxy is a standalone CLI (needs `httpx`), not part of this
 plugin's MCP bundle.
 
 ## Install
 
 ```
 /plugin marketplace add evigauge-org/evigauge-cli-plugin
-/plugin install opexia@opexia
+/plugin install evigauge@evigauge
 ```
 
 **Local checkout:** `/plugin marketplace add ./evigauge-cli-plugin`, then the same
@@ -144,35 +144,35 @@ plugin's MCP bundle.
 ## Use
 
 ```
-/opexia:instrument
-/opexia:instrument use direct http
-/opexia:instrument attribute per end user
+/evigauge:instrument
+/evigauge:instrument use direct http
+/evigauge:instrument attribute per end user
 ```
 Fill in the values the plugin writes into `.env.example`
-(`OPEXIA_ORG_ID`, `OPEXIA_WORKSPACE_ID`, `OPEXIA_PROJECT_ID`, `OPEXIA_API_KEY`,
-`OPEXIA_INGEST_URL`), then re-run the verify step.
+(`EVIGAUGE_ORG_ID`, `EVIGAUGE_WORKSPACE_ID`, `EVIGAUGE_PROJECT_ID`, `EVIGAUGE_API_KEY`,
+`EVIGAUGE_INGEST_URL`), then re-run the verify step.
 
 ## The one rule that breaks everything if ignored
 
 OpenTelemetry span attributes hold only primitives. **Never send a nested
-object/dict as an attribute value.** Compound OpexIA fields
-(`opexia.sources`, `opexia.decision`, …) are sent as `json.dumps` /
+object/dict as an attribute value.** Compound Evigauge fields
+(`evigauge.sources`, `evigauge.decision`, …) are sent as `json.dumps` /
 `JSON.stringify` **strings**; `query_text`/`outcome_text` are plain strings. A
-nested blob or an unknown `opexia.*` key silently dead-letters the whole span
+nested blob or an unknown `evigauge.*` key silently dead-letters the whole span
 (HTTP 202, then gone). The skill encodes this so the agent can't walk into it.
 
 ## License
 
 Proprietary. Free to **install and use** to instrument your own applications for
-OpexIA — but you may **not** redistribute, resell, sublicense, or fork it. See
+Evigauge — but you may **not** redistribute, resell, sublicense, or fork it. See
 [`LICENSE`](LICENSE). This is not open-source software.
 
 ## Layout
 
 ```
-tools/opexia-cli-plugin/
+tools/evigauge-cli-plugin/
   .claude-plugin/
-    plugin.json           # manifest (name: opexia)
+    plugin.json           # manifest (name: evigauge)
     marketplace.json      # git-installable marketplace entry
   skills/instrument/
     SKILL.md              # the decision procedure + wire contract + traps (HITL-gated)
@@ -182,14 +182,14 @@ tools/opexia-cli-plugin/
       python_direct_http.py
       nextjs_instrumentation.ts
       node_otlp_setup.ts
-      opexia_attributes.ts
+      evigauge_attributes.ts
       verify_span.py
       verify_span.ts
       env.example.block
   skills/secure/
-    SKILL.md              # /opexia:secure — prompt-injection audit + HITL mitigation
+    SKILL.md              # /evigauge:secure — prompt-injection audit + HITL mitigation
   skills/compress/
-    SKILL.md              # /opexia:compress — pxcore token compression setup
+    SKILL.md              # /evigauge:compress — pxcore token compression setup
   vendor/                 # bundled pxcore (pure stdlib) for the compress MCP tools
   README.md
 ```

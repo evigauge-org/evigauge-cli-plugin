@@ -35,7 +35,7 @@ files, command dumps) — never for a file you are about to edit.
 Out of the box pxcore returns **text** (safe, no compression) until BOTH are cleared. Do not
 tell the user they are saving tokens until they are.
 
-### Gate 1 — calibrate the active model (`/opexia:compress calibrate`)
+### Gate 1 — calibrate the active model (`/evigauge:compress calibrate`)
 
 The shipped `claude-fable-5` profile is **provisional**: its fidelity scores are 0, so it
 images **nothing** until a real calibration run measures how well *this* model reads imaged

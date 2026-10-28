@@ -31,7 +31,7 @@ jobs:
           scan "GitHub token"          '(ghp_|gho_)[A-Za-z0-9]{20,}|github_pat_[A-Za-z0-9_]{20,}'
           scan "private key block"     'BEGIN ([A-Z]+ )?PRIVATE KEY'
           scan "generic sk- secret"    'sk-[A-Za-z0-9]{20,}'
-          scan "internal infra marker" '(amazonaws\.com|opexia-prod|zealous-spider|subnet-[0-9a-f]{8,}|sg-[0-9a-f]{8,})'
+          scan "internal infra marker" '(amazonaws\.com|evigauge-prod|zealous-spider|subnet-[0-9a-f]{8,}|sg-[0-9a-f]{8,})'
           exit $fail
 
       - uses: actions/setup-python@v5
@@ -51,16 +51,16 @@ jobs:
 
       # vendor/ must be an exact copy of pxcore + pxcore_mcp from the SDK
       # release named in vendor/SDK_VERSION (evigauge-org/evigauge-python-sdk,
-      # PyPI opexia-trace). To update: bump SDK_VERSION and copy both packages
+      # PyPI evigauge-trace). To update: bump SDK_VERSION and copy both packages
       # from that release.
       - name: Bundled pxcore matches the pinned SDK release
         run: |
           v=$(cat vendor/SDK_VERSION)
-          pip download --no-deps --pre "opexia-trace==$v" -d /tmp/sdk
-          mkdir -p /tmp/sdk/x && cd /tmp/sdk/x && python -m zipfile -e ../opexia_trace-*.whl . && cd -
+          pip download --no-deps --pre "evigauge-trace==$v" -d /tmp/sdk
+          mkdir -p /tmp/sdk/x && cd /tmp/sdk/x && python -m zipfile -e ../evigauge_trace-*.whl . && cd -
           diff -r --exclude=__pycache__ vendor/pxcore /tmp/sdk/x/pxcore
           diff -r --exclude=__pycache__ vendor/pxcore_mcp /tmp/sdk/x/pxcore_mcp
-          echo "vendor matches opexia-trace $v"
+          echo "vendor matches evigauge-trace $v"
 
       # Start the MCP server exactly as .mcp.json does and list its tools.
       - name: MCP server starts and lists its tools
