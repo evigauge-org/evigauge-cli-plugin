@@ -9,7 +9,7 @@
  *
  * Env (see env.example.block). MUST be http/json — protobuf export returns 415:
  *   EVIGAUGE_INGEST_URL=https://ingest.evigauge.ai
- *   EVIGAUGE_API_KEY=opx_live_…            (server-only secret)
+ *   EVIGAUGE_API_KEY=evg_live_…            (server-only secret)
  *
  * After this registers the exporter, enrich spans with the evigauge.* attributes
  * using ./evigauge_attributes.ts (copy it into your project). RULE 0 applies:

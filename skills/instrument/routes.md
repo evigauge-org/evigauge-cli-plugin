@@ -8,7 +8,7 @@ identical across all three.
 
 - **Ingest host:** `EVIGAUGE_INGEST_URL` (e.g. `https://ingest.evigauge.ai`).
 - **Path:** `/v1/traces` (a registered alias of `/v1/otlp/traces` — both work).
-- **Auth:** header `x-evigauge-api-key: <EVIGAUGE_API_KEY>` (`opx_live_…` / `opx_test_…`).
+- **Auth:** header `x-evigauge-api-key: <EVIGAUGE_API_KEY>` (`evg_live_…` / `evg_test_…`).
 - The ingest **backfills the tenancy envelope from the API key** when omitted:
   a stock OTel exporter with the three OTEL env vars and ZERO `evigauge.*`
   attributes still ingests — you get spans, latency, errors, and fleet topology.
