@@ -26,7 +26,7 @@ jobs:
               echo "::error::BLOCKED — $1 found:"; cat /tmp/hit; fail=1
             fi
           }
-          scan "workspace/API key"     'opx_(live|test)_[A-Za-z0-9]{8,}'
+          scan "workspace/API key"     '(evg|dr|cck)_(live|test)_[A-Za-z0-9_-]{8,}'
           scan "AWS access key"        'AKIA[0-9A-Z]{16}'
           scan "GitHub token"          '(ghp_|gho_)[A-Za-z0-9]{20,}|github_pat_[A-Za-z0-9_]{20,}'
           scan "private key block"     'BEGIN ([A-Z]+ )?PRIVATE KEY'
