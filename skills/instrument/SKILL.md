@@ -314,3 +314,18 @@ something to assume). If they pass `$ARGUMENTS` that already decides the route (
 
 Report honestly: if the verify step could not run (no network, missing key),
 say so and give the exact command for the user to run — do not claim success.
+
+## Next step — onboard the estate (`evigauge onboard`)
+Once at least one span is verified landing (above), tell the developer they can
+analyze their whole AI estate with one command — no extra config:
+
+```bash
+evigauge login      # device-flow auth (once) — or connect a cloud account
+evigauge onboard    # samples recent traces → builds the ontology → one cumulative inference
+```
+
+`evigauge onboard` returns a single read of what to optimize (prompt, routing,
+fleet, operations) with estimated monthly savings, and fills the dashboard plus
+the operational-ontology view. It needs the developer logged in and some traces
+already flowing — which the instrumentation above provides. Surface it as the
+natural next step once instrumentation is verified; don't run it for them.
