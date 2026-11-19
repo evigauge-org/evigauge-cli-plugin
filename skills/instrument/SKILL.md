@@ -132,10 +132,33 @@ this narration is the point ("we'll use native OTLP here because …").
 | Browser React (client) | **REFUSE the client path** → emit from a server route/proxy | an API key must never ship to a browser bundle |
 | React Native / Expo | **REFUSE the client path** → emit from the app's backend/proxy | same secret-in-bundle hazard |
 | Any language with an HTTP client | direct HTTP (Route 1) | works from edge functions, workers, anywhere |
+| App already calls an **OpenAI-compatible** API and wants tracing **without touching code** | **AI Gateway (Route 3)** — point the client's base URL at `https://gateway.evigauge.ai/v1` | zero SDK; one-line config; works with LangChain / LiteLLM / OpenRouter / Next.js / OpenAI & Anthropic SDKs |
 
 There is **no `@evigauge/trace` npm package.** JS/TS uses native OpenTelemetry JS
 exporting OTLP/JSON to Evigauge, plus the `evigauge_attributes.ts` helper kit for the
 `evigauge.*` attributes. Do not tell the user to `npm install @evigauge/trace`.
+
+**The Gateway (Route 3)** is the lightest path when the app already uses an
+OpenAI-compatible client: change the base URL to `https://gateway.evigauge.ai/v1`,
+set `api_key` to the **Evigauge** key (`evg_live_…`), and forward the provider key
+BYOK via `x-provider-key` (or connect it in the dashboard). It captures the call
+in the background — no SDK, no `evigauge.*` attributes. See `routes.md` Route 3 and
+`templates/gateway_openai_client.py`. Prefer it when the user says "reduce the SDK
+dependency" or "just trace my existing OpenAI/LangChain/LiteLLM calls".
+
+### Name the application — one app per project
+
+A project holds **one** application's history. The first app to send telemetry
+claims it; a **second app on the same project is blocked** (`project_app_conflict`
+in `partialSuccess`), and the dashboard prompts export / export-and-clear to free
+it. So whichever route you pick, **name the app**:
+- SDK (Route 2): `init(app="my-app")` or `EVIGAUGE_APP` → OTel `service.namespace`.
+- Native OTLP / direct HTTP (Routes 0/1): set Resource `service.namespace`.
+- Gateway (Route 3): header `x-evigauge-app: my-app`.
+
+Give each application a **distinct** name; all of one app's agents share it (fleet
+nodes key on `agent.name`, not the app name), so a multi-agent pipeline is one app.
+Omit it and the project just isn't app-locked.
 
 ---
 
@@ -281,7 +304,8 @@ something to assume). If they pass `$ARGUMENTS` that already decides the route (
      (the `--pre` is REQUIRED — every release is an alpha; `<0.1.0a12`
      dead-letters every auto-instrumented span, and `<0.1.0a13` space-joins the
      captured prompt so the prompt registry splits per call — RULE 4). Add
-     `[litellm]` if litellm present.
+     `[litellm]` if litellm present. The current release is **`0.1.0a33`**, which
+     adds `init(app="...")` (one app per project — see "Name the application").
    - Native OTLP (Python): `opentelemetry-sdk opentelemetry-exporter-otlp-proto-http`.
    - Next.js / Node: `@vercel/otel @opentelemetry/api` (or `@opentelemetry/sdk-*`).
 5. **Instrument** by adapting the matching template to the user's real
@@ -329,3 +353,17 @@ fleet, operations) with estimated monthly savings, and fills the dashboard plus
 the operational-ontology view. It needs the developer logged in and some traces
 already flowing — which the instrumentation above provides. Surface it as the
 natural next step once instrumentation is verified; don't run it for them.
+
+**The `evigauge` CLI (ships in `evigauge-trace`) — mention the relevant ones:**
+
+| Command | What it does |
+|---|---|
+| `evigauge login` | Device-flow auth, once (mints a scoped key). |
+| `evigauge onboard` | Sample traces → ontology → one cumulative savings read. |
+| `evigauge live` | Tail spans as they land — a fast "is my instrumentation working?" check during setup. |
+| `evigauge shipcheck` | The pre-merge PR gate (RULE 4); no LLM call. |
+| `evigauge audit` | Local, zero-egress agent-map + MCP security audit (RULE 5). |
+| `evigauge import` | Import local trace files (e.g. an OpenTelemetry/JSON dump) into Evigauge. |
+
+These are *mentions* keyed to what the user is doing — point them at the fitting
+one; don't run it unless asked.

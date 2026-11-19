@@ -19,8 +19,16 @@ dead-letter trap, and the CLI's agent instruments your actual code from it.
   - Next.js / Node → native OTLP/JSON (there is **no** `@evigauge/trace` npm
     package; JS uses standard OpenTelemetry JS + the bundled attribute kit).
   - Anything with an HTTP client → direct HTTP.
+  - Already calling an **OpenAI-compatible** API and want tracing without touching
+    code → the **AI Gateway**: point the client's base URL at
+    `https://gateway.evigauge.ai/v1` (works with LangChain / LiteLLM / OpenRouter /
+    Next.js / the OpenAI & Anthropic SDKs). No tracing SDK.
   - Browser React / React Native → **refuses the client path** and routes through
     a server, so your API key never ships in a client bundle.
+
+Each project holds **one application** — the plugin names the app
+(`init(app=…)` / `x-evigauge-app` / `service.namespace`) so a second app on the
+same project is caught rather than silently mixed in.
 - **Installs** the dependency, pinned correctly (`--pre`, `evigauge-trace>=0.1.0a13`).
 - **Instruments** your code and enriches spans with the `evigauge.*` intelligence
   attributes (sources, decision, reasoning, query/outcome text).

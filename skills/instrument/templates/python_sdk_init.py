@@ -1,8 +1,9 @@
 """Evigauge — evigauge-trace SDK bootstrap (Route 2, greenfield Python).
 
-Install:  pip install --upgrade --pre "evigauge-trace>=0.1.0a12"
+Install:  pip install --upgrade --pre "evigauge-trace>=0.1.0a13"
           # --pre is REQUIRED (every release is an alpha). <0.1.0a12 dead-letters
-          # every auto-instrumented span — do not pin below it.
+          # every auto-instrumented span; <0.1.0a13 space-joins the captured
+          # prompt (splits the prompt registry). Current release: 0.1.0a33.
 
 Call init() ONCE, as early as possible in process startup (before the LLM
 clients you want auto-instrumented are used). The agent adapting this template
@@ -18,6 +19,10 @@ def init_evigauge() -> None:
         org_id=os.environ["EVIGAUGE_ORG_ID"],
         workspace_id=os.environ["EVIGAUGE_WORKSPACE_ID"],
         project_id=os.environ.get("EVIGAUGE_PROJECT_ID", "default"),
+        # Names THIS application (one app per project). Becomes OTel
+        # service.namespace; a second app on the same project is blocked. All of
+        # this app's agents share it. Omit to leave the project not app-locked.
+        app=os.environ.get("EVIGAUGE_APP") or None,
         # The ingest host. For transport="direct" spans POST straight here.
         backend_url=os.environ["EVIGAUGE_INGEST_URL"],
         api_key=os.environ["EVIGAUGE_API_KEY"],

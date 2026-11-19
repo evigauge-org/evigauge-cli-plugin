@@ -19,6 +19,26 @@ identical across all three.
   lands in the workspace's **default** project (the dashboard shows a banner);
   a deleted project's slug is rejected (`project_deleted` in `partialSuccess`).
 
+## One application per project (name your app)
+
+A project holds the history of **one** application. The first app to send
+telemetry **claims** the project; a *different* app sending to the same project
+is **blocked** — its spans dead-letter with `project_app_conflict` in
+`partialSuccess`, and the dashboard prompts the team to export the data or
+export-and-clear the project to free it for the new app.
+
+"Which app" is the **application fingerprint**, resolved per route:
+- **SDK (Route 2):** `init(app="my-app")` (or `EVIGAUGE_APP`) → sets OTel
+  `service.namespace`. **Set it** so the project locks to the right app.
+- **Native OTLP / direct HTTP (Routes 0/1):** set the Resource/attr
+  `service.namespace` to your app's name. (A real `service.name` also works, but
+  the SDK's `service.name` is project-derived, so prefer `service.namespace`.)
+- **AI Gateway (Route 3):** header `x-evigauge-app: my-app`.
+
+All of an app's agents share one name (fleet nodes key on `agent.name`, not the
+app name), so a multi-agent pipeline is still one app. Omit the name and the
+project simply isn't app-locked. Use a **distinct** name per application.
+
 ## Route 0 — native OTLP/JSON (your existing / a fresh OTel SDK)
 
 Best when the app already traces, and the ONLY option for JS/TS today.
@@ -94,6 +114,49 @@ tokens on native/direct routes:
 - `gen_ai.usage.cache_read_input_tokens` / `cached_tokens` (cache split)
 - `gen_ai.response.finish_reason`
 If you omit `evigauge.cost.usd`, the backend infers cost from model + tokens.
+
+## Route 3 — AI Gateway (OpenAI-compatible proxy, zero SDK)
+
+When the app already calls an LLM through an **OpenAI-compatible** client, the
+cheapest integration is to change **one line — the base URL** — and route calls
+through the Evigauge Gateway. It forwards byte-for-byte to the provider and
+captures the call (prompt, response, tokens, latency, cost) in the background. No
+tracing SDK, no OTel, no code beyond the client config. Works with the OpenAI and
+Anthropic SDKs, OpenRouter, and anything built on them (LangChain, LangFuse,
+LiteLLM, Vercel AI SDK / Next.js, plain `requests`/`httpx`).
+
+- **Base URL:** `https://gateway.evigauge.ai/v1`
+- **Endpoints:** `/chat/completions`, `/responses`, `/completions`, `/embeddings`.
+- **Auth (tenancy):** your **Evigauge key** as `Authorization: Bearer evg_live_…`
+  — i.e. set the OpenAI client's `api_key` to the evg key.
+- **Provider key (BYOK):** either connect the provider once in the dashboard, or
+  send it per request as the header `x-provider-key: <your-openai/anthropic-key>`.
+  No provider key → `412` (the one fail-closed case).
+- **Headers:**
+  - `x-evigauge-project-id: <project-slug>` — which project the call belongs to.
+  - `x-evigauge-app: <app-name>` — the one-app-per-project fingerprint (above).
+  - `x-evigauge-trace-id: <32-hex>` — optional, to stitch gateway calls into a trace.
+
+```python
+# templates/gateway_openai_client.py — the whole integration
+from openai import OpenAI
+client = OpenAI(
+    base_url="https://gateway.evigauge.ai/v1",
+    api_key="evg_live_...",                      # your EVIGAUGE key (tenancy)
+    default_headers={
+        "x-evigauge-project-id": "checkout-bot",
+        "x-evigauge-app": "checkout-bot",        # one app per project
+        "x-provider-key": "sk-...",              # your OpenAI key (or connect in dashboard)
+    },
+)
+client.chat.completions.create(model="gpt-4o", messages=[...])   # traced, unchanged
+```
+
+Streaming is teed (no added latency). The Gateway path captures the LLM call
+automatically; it does not need the `evigauge.*` enrichment attributes (those are
+for the SDK/OTLP/direct routes). Pick this route when the user wants tracing
+**without touching their code** beyond the client's base URL — or explicitly asks
+for the Gateway / to "reduce the SDK dependency".
 
 ## Refused paths (secrets)
 

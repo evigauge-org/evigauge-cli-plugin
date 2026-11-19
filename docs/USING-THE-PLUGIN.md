@@ -99,11 +99,20 @@ When it's done:
 
 ```
 /evigauge:instrument use direct http
+/evigauge:instrument use the gateway        # trace existing OpenAI/LangChain calls, no SDK
 /evigauge:instrument attribute per end user
 ```
 
 If you're not sure which to use, run plain `/evigauge:instrument` and let the plugin
 recommend.
+
+> **No code change? Use the AI Gateway.** If your app already calls an
+> OpenAI-compatible API (OpenAI, Anthropic, OpenRouter, LangChain, LiteLLM,
+> Next.js…), you can trace it by changing **one line** — the client's base URL to
+> `https://gateway.evigauge.ai/v1` — with your Evigauge key as the `api_key`. The
+> plugin will set this up and show you the headers. Each project tracks **one
+> application**, so the plugin names your app to keep two apps from mixing into
+> one project.
 
 > **Frontend safety:** for browser or mobile apps, the plugin deliberately
 > **refuses** to put your API key in client code and routes through your server
